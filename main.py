@@ -1,11 +1,12 @@
+from threading import Thread
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit
 from PyQt6 import uic
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QTimer
 import sys
 import os
 import requests
-from random import randint
 import subprocess
+
 #Setup
 subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "req.txt"])
@@ -15,9 +16,10 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 class working():
     username = ''
     password = ''
+    messageCountTemp = 0
     messageCount = 0
-    maxMessages= 21
-    maxOneRow = 7
+    maxMessages= 12
+    maxOneRow = 4
 
     def sendServerRequest(place, request, username, password):
         headers = {
@@ -39,6 +41,18 @@ class messagesPage(QWidget):
         
         uic.loadUi(dir_path+'/frames/messagePage.ui', self)
 
+        # Setup updater
+        self.updateMessages=QTimer()
+        self.updateMessages.timeout.connect(self.createMessages)
+
+        # Start updating messages
+        self.updateMessages.start(5000)
+
+        self.showFullScreen()
+
+        
+
+    def createMessages(self):
         # Split messages up into sperate objects
         messages = working.sendServerRequest('backend/getMessages.php','getMessages', working.username, working.password).split("<br>")
         labelPlaceColum = -1
@@ -48,10 +62,9 @@ class messagesPage(QWidget):
         # Math bullshit
         # Bassically loop however many times there are messages
         for i in messages:
-            # This is to keep track of current amount of messages
-            working.messageCount += 1
-            # Only allow x amount of messages to be displayed
-            if (working.messageCount <= working.maxMessages):
+             # Only allow x amount of messages to be displayed
+            if (working.messageCountTemp < working.maxMessages):
+                working.messageCountTemp += 1
                 # Allow 4 messages in one row
                 if (layoutCheck == working.maxOneRow):
                     # Change row
@@ -70,7 +83,7 @@ class messagesPage(QWidget):
                 # Add messages to grid
                 self.gridLayout.addWidget(messageArea, row, labelPlaceColum)
 
-        self.showFullScreen()
+        working.messageCountTemp = 0
 
 
 class MainWindow(QMainWindow):
