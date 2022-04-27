@@ -12,6 +12,7 @@ import os
 import requests
 from pydub import AudioSegment
 from pydub.playback import play
+from time import sleep
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -64,7 +65,6 @@ class messagesPage(QWidget):
         self.updateMessages.start(5000)
 
         self.showFullScreen()
-
         
 
     def createMessages(self):
@@ -81,17 +81,11 @@ class messagesPage(QWidget):
             working.idCounter = i.split('<br>')[0]
             if (working.messageCountTemp == 0):
                 working.idCurrent = working.idCounter
-                print(working.idCurrent)
             
-            # If new ID is added then execute message stuff
-            if (working.idCurrent != working.idTemp):
-                if (working.messageCountLock):
-                    # Alert if new message comes in and set message lock off
-                    alert = AudioSegment.from_mp3(dir_path + "/res/sounds/quack.mp3")
-                    play(alert)
-                    working.messageCountLock = False
-
-                # Allow 4 messages in one row
+            # If new ID is added then execute message stuff and check if there is anything in DB
+            if (working.idCurrent != working.idTemp and working.idCurrent != ""):
+                #--------Create Messages--------
+                # Allow x amount of messages in one row
                 if (layoutCheck == working.maxOneRow):
                     # Change row
                     row += 1
@@ -112,7 +106,22 @@ class messagesPage(QWidget):
                 # Add messages to grid
                 self.gridLayout.addWidget(messageArea, row, colum)
 
+                #------------------------------
+
+                    
             working.messageCountTemp += 1
+
+        # Check if theres any messages
+        if (working.messageCountLock):
+            # Prevent range error
+            if (working.idTemp == "" or working.idCurrent == ""):
+                working.idTemp = 0
+                working.idCurrent = 0
+            # This is a queue for the sound effect
+            for x in range(int(working.idTemp), int(working.idCurrent)):
+                # Alert if new message comes in
+                alert = AudioSegment.from_mp3(dir_path + "/res/sounds/quack.mp3")
+                play(alert)
 
         # Reset Stuff
         working.messageCountLock = True
@@ -121,7 +130,7 @@ class messagesPage(QWidget):
         # Sets the temp id last so it can check the current id first
         if (working.messageCountTemp == 0):
             working.idTemp = working.idCurrent
-            print(working.idTemp)
+        
 
 class MainWindow(QMainWindow):
     def __init__(self):
