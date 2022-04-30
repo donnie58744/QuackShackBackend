@@ -1,9 +1,9 @@
 #### Install First:
-- Please make sure that you have FFMPEG installed
 
-> `Windows` - [Click here](https://www.ffmpeg.org/download.html) and download the exe
->
-> `MacOs` - Download Homebrew from [here](https://brew.sh) then paste this into your terminal `brew install ffmpeg`
+`MacOs Dependencies`
+> `HomeBrew` - Download Homebrew from [here](https://brew.sh)
+
+> `FFMPEG` - Paste this in your terminal `brew install ffmpeg`
 
 #### Run:
 `Sh or Bat file`
