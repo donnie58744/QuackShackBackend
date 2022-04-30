@@ -1,4 +1,6 @@
 #### Install First:
+`Python 3`
+> Download Python from [here](https://www.python.org/downloads/)
 
 `MacOs Dependencies`
 > `HomeBrew` - Download Homebrew from [here](https://brew.sh)
