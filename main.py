@@ -55,7 +55,7 @@ class messagesPage(QWidget):
     def __init__(self):
         super().__init__()
         
-        uic.loadUi(dir_path+'/frames/messagePage.ui', self)
+        uic.loadUi(dir_path+'/res/frames/messagePage.ui', self)
 
         # Setup updater
         self.updateMessages=QTimer()
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.w = None  # No external window yet.
-        uic.loadUi(dir_path+'/frames/loginPage.ui', self)
+        uic.loadUi(dir_path+'/res/frames/loginPage.ui', self)
         self.loginBtn.clicked.connect(self.login)
 
     def openWindow(self, window):
