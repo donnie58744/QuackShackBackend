@@ -58,7 +58,7 @@ class audioPlayer():
             alert = AudioSegment.from_mp3(dir_path + "/res/sounds/quack.mp3")
             play(alert)
         else:
-            AudioPlayer(dir_path + "/res/sounds/quack.mp3").play(block=False)
+            AudioPlayer(dir_path + "/res/sounds/quack.mp3").play(block=True)
 
 class messagesPage(QWidget):
     """
