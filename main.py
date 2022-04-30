@@ -4,13 +4,19 @@ import sys
 subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "req.txt"])
 
+import platform
+if (platform.system() == 'Darwin' or platform.system() == 'Linux'):
+    from pydub import AudioSegment
+    from pydub.playback import play
+else:
+    from audioplayer import AudioPlayer
+
 from threading import Thread
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit
 from PyQt6 import uic
 from PyQt6.QtCore import QTimer
 import os
 import requests
-from audioplayer import AudioPlayer
 from time import sleep
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -45,6 +51,14 @@ class working():
         r = requests.post('https://www.quackyos.com/QuackShack/' + place, data=pload, headers=headers)
         output = str(r.text)
         return output
+
+class audioPlayer():
+    def playSound():
+        if (platform.system() == 'Darwin' or platform.system() == 'Linux'):
+            alert = AudioSegment.from_mp3(dir_path + "/res/sounds/quack.mp3")
+            play(alert)
+        else:
+            AudioPlayer(dir_path + "/res/sounds/quack.mp3").play(block=False)
 
 class messagesPage(QWidget):
     """
@@ -119,7 +133,7 @@ class messagesPage(QWidget):
             # This is a queue for the sound effect
             for x in range(int(working.idTemp), int(working.idCurrent)):
                 # Alert if new message comes in
-                AudioPlayer(dir_path + "/res/sounds/quack.mp3").play(block=True)
+                audioPlayer.playSound()
 
         # Reset Stuff
         working.messageCountLock = True
