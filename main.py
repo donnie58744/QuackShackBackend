@@ -10,8 +10,7 @@ from PyQt6 import uic
 from PyQt6.QtCore import QTimer
 import os
 import requests
-from pydub import AudioSegment
-from pydub.playback import play
+from audioplayer import AudioPlayer
 from time import sleep
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -120,8 +119,7 @@ class messagesPage(QWidget):
             # This is a queue for the sound effect
             for x in range(int(working.idTemp), int(working.idCurrent)):
                 # Alert if new message comes in
-                alert = AudioSegment.from_mp3(dir_path + "/res/sounds/quack.mp3")
-                play(alert)
+                AudioPlayer(dir_path + "/res/sounds/quack.mp3").play(block=True)
 
         # Reset Stuff
         working.messageCountLock = True
