@@ -1,3 +1,4 @@
+from concurrent.futures import thread
 import subprocess
 import sys
 #Setup
@@ -58,11 +59,14 @@ class working():
 
 class audioPlayer():
     def playSound(sound):
-        if (platform.system() == 'Darwin' or platform.system() == 'Linux'):
-            alert = AudioSegment.from_mp3(dir_path + "/res/sounds/" + sound)
-            play(alert)
-        else:
-            AudioPlayer(dir_path + "/res/sounds/" + sound).play(block=True)
+        try:
+            if (platform.system() == 'Darwin' or platform.system() == 'Linux'):
+                alert = AudioSegment.from_mp3(dir_path + "/res/sounds/" + sound)
+                play(alert)
+            else:
+                AudioPlayer(dir_path + "/res/sounds/" + sound).play(block=True)
+        except Exception as e:
+            print('Playsound Error: ' + str(e))
 
 class messagesPage(QWidget):
     """
@@ -85,76 +89,80 @@ class messagesPage(QWidget):
         
 
     def createMessages(self):
-        # Split messages up into sperate objects
-        messages = working.sendServerRequest('backend/getMessages.php','getMessages', working.username, working.password, working.maxMessages).split(working.charSplit)
-        colum = -1
-        row = 0
-        layoutCheck = 0
-        
-        # Math bullshit
-        # Bassically loop however many times there are messages
-        for i in messages:
-            # Gets current post it ID
-            working.idCounter = i.split('<br>')[0]
-            working.messageFunction = i.split('<br>')[3]
-            if (working.messageCountTemp == 0):
-                working.idCurrent = working.idCounter
+        try:
+            # Split messages up into sperate objects
+            messages = working.sendServerRequest('backend/getMessages.php','getMessages', working.username, working.password, working.maxMessages).split(working.charSplit)
+            colum = -1
+            row = 0
+            layoutCheck = 0
             
-            # If new ID is added then execute message stuff and check if there is anything in DB
-            if (working.idCurrent != working.idTemp and working.idCurrent != ""):
-                while working.queueCounter < int(working.idCurrent) - int(working.idTemp) and working.messageCountLock:
-                    working.messageQueue.insert(0, working.messageFunction)
-                    working.queueCounter += 1
-                    break
-                #--------Create Messages--------
-                # Allow x amount of messages in one row
-                if (layoutCheck == working.maxOneRow):
-                    # Change row
-                    row += 1
-                    # reset vars
-                    layoutCheck = 0
-                    colum = -1
-                layoutCheck += 1
-                # Increase colum pos
-                colum += 1
-                # Create messages and set props
-                messageArea = QTextEdit()
-                messageArea.setText(i)
-                messageArea.setReadOnly(True)
-                messageArea.setStyleSheet('background-color: rgb(209, 183, 15); padding-top: 10px; border-top: 50px solid; border-top-color: rgb(158, 158, 158);')
-                messageArea.setMaximumHeight(working.messagesMaxHeight)
-                messageArea.setMaximumWidth(working.messagesMaxWidth)
-
-                # Add messages to grid
-                self.gridLayout.addWidget(messageArea, row, colum)
-
-                #------------------------------
-
+            # Math bullshit
+            # Bassically loop however many times there are messages
+            for i in messages:
+                # check if there is anything in DB
+                if (len(i) != 0):
+                    # Gets current post it ID
+                    working.idCounter = i.split('|')[0]
+                    working.messageFunction = i.split('|')[3]
+                    if (working.messageCountTemp == 0):
+                        working.idCurrent = working.idCounter
                     
-            working.messageCountTemp += 1
+                    # If new ID is added then execute message stuff
+                    if (working.idCurrent != working.idTemp):
+                        while working.queueCounter < int(working.idCurrent) - int(working.idTemp) and working.messageCountLock:
+                            working.messageQueue.insert(0, working.messageFunction)
+                            working.queueCounter += 1
+                            break
+                        #--------Create Messages--------
+                        # Allow x amount of messages in one row
+                        if (layoutCheck == working.maxOneRow):
+                            # Change row
+                            row += 1
+                            # reset vars
+                            layoutCheck = 0
+                            colum = -1
+                        layoutCheck += 1
+                        # Increase colum pos
+                        colum += 1
+                        # Create messages and set props
+                        messageArea = QTextEdit()
+                        messageArea.setText(i)
+                        messageArea.setReadOnly(True)
+                        messageArea.setStyleSheet('background-color: rgb(209, 183, 15); padding-top: 10px; border-top: 50px solid; border-top-color: rgb(158, 158, 158);')
+                        messageArea.setMaximumHeight(working.messagesMaxHeight)
+                        messageArea.setMaximumWidth(working.messagesMaxWidth)
 
-        # Check if theres any messages
-        if (working.messageCountLock):
-            # Prevent range error
-            if (working.idTemp == "" or working.idCurrent == ""):
-                working.idTemp = 0
-                working.idCurrent = 0
-            # This is a queue for the sound effect
-            for x in range(0, len(working.messageQueue)):
-                # Alert if new message comes in
-                audioPlayer.playSound(working.messageQueue[x])
-                print(working.messageQueue)
-                print(working.messageQueue[x])
-            working.messageQueue = []
+                        # Add messages to grid
+                        self.gridLayout.addWidget(messageArea, row, colum)
 
-        # Reset Stuff
-        working.messageCountLock = True
-        working.messageCountTemp = 0
-        working.queueCounter = 0
+                        #------------------------------
 
-        # Sets the temp id last so it can check the current id first
-        if (working.messageCountTemp == 0):
-            working.idTemp = working.idCurrent
+                            
+                    working.messageCountTemp += 1
+
+            # Check if theres any messages
+            if (working.messageCountLock):
+                # Prevent range error
+                if (working.idTemp == "" or working.idCurrent == ""):
+                    working.idTemp = 0
+                    working.idCurrent = 0
+                # This is a queue for the sound effect
+                for x in range(0, len(working.messageQueue)):
+                    # Alert if new message comes in
+                    audioThread= Thread(target=audioPlayer.playSound(working.messageQueue[x]))
+                    audioThread.start()
+                working.messageQueue = []
+
+            # Reset Stuff
+            working.messageCountLock = True
+            working.messageCountTemp = 0
+            working.queueCounter = 0
+
+            # Sets the temp id last so it can check the current id first
+            if (working.messageCountTemp == 0):
+                working.idTemp = working.idCurrent
+        except Exception as e:
+            print("Create Message Error: " + str(e))
         
 
 class MainWindow(QMainWindow):
