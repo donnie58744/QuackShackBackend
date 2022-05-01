@@ -59,7 +59,7 @@ class working():
 class audioPlayer():
     def playSound(sound):
         if (platform.system() == 'Darwin' or platform.system() == 'Linux'):
-            alert = AudioSegment.from_mp3(dir_path + "/res/sounds/quack.mp3")
+            alert = AudioSegment.from_mp3(dir_path + "/res/sounds/" + sound)
             play(alert)
         else:
             AudioPlayer(dir_path + "/res/sounds/" + sound).play(block=True)
