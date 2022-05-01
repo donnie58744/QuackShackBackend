@@ -42,6 +42,10 @@ class working():
     idCurrent = 0
     idCounter = 0
 
+    queueCounter = 0
+    messageQueue = []
+    messageFunction = ''
+
     def sendServerRequest(place, request, username, password, amountOfMessages):
         headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:55.0) Gecko/20100101 Firefox/55.0',
@@ -53,12 +57,12 @@ class working():
         return output
 
 class audioPlayer():
-    def playSound():
+    def playSound(sound):
         if (platform.system() == 'Darwin' or platform.system() == 'Linux'):
             alert = AudioSegment.from_mp3(dir_path + "/res/sounds/quack.mp3")
             play(alert)
         else:
-            AudioPlayer(dir_path + "/res/sounds/quack.mp3").play(block=True)
+            AudioPlayer(dir_path + "/res/sounds/" + sound).play(block=True)
 
 class messagesPage(QWidget):
     """
@@ -92,11 +96,16 @@ class messagesPage(QWidget):
         for i in messages:
             # Gets current post it ID
             working.idCounter = i.split('<br>')[0]
+            working.messageFunction = i.split('<br>')[3]
             if (working.messageCountTemp == 0):
                 working.idCurrent = working.idCounter
             
             # If new ID is added then execute message stuff and check if there is anything in DB
             if (working.idCurrent != working.idTemp and working.idCurrent != ""):
+                while working.queueCounter < int(working.idCurrent) - int(working.idTemp) and working.messageCountLock:
+                    working.messageQueue.insert(0, working.messageFunction)
+                    working.queueCounter += 1
+                    break
                 #--------Create Messages--------
                 # Allow x amount of messages in one row
                 if (layoutCheck == working.maxOneRow):
@@ -131,13 +140,17 @@ class messagesPage(QWidget):
                 working.idTemp = 0
                 working.idCurrent = 0
             # This is a queue for the sound effect
-            for x in range(int(working.idTemp), int(working.idCurrent)):
+            for x in range(0, len(working.messageQueue)):
                 # Alert if new message comes in
-                audioPlayer.playSound()
+                audioPlayer.playSound(working.messageQueue[x])
+                print(working.messageQueue)
+                print(working.messageQueue[x])
+            working.messageQueue = []
 
         # Reset Stuff
         working.messageCountLock = True
         working.messageCountTemp = 0
+        working.queueCounter = 0
 
         # Sets the temp id last so it can check the current id first
         if (working.messageCountTemp == 0):
