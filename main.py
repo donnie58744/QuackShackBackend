@@ -5,20 +5,24 @@ import sys
 subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "req.txt"])
 
+
 import platform
-if (platform.system() == 'Darwin' or platform.system() == 'Linux'):
+machineOs = platform.system()
+if (machineOs == 'Darwin' or machineOs == 'Linux'):
     from pydub import AudioSegment
     from pydub.playback import play
 else:
     from audioplayer import AudioPlayer
 
 from threading import Thread
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QPushButton
-from PyQt6 import uic
-from PyQt6.QtCore import QThread, pyqtSlot, QObject, pyqtSignal, Qt
+from gtts import gTTS
 import os
 import requests
 from time import sleep
+# PyQt Libs
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QPushButton
+from PyQt6 import uic
+from PyQt6.QtCore import QThread, pyqtSlot, QObject, pyqtSignal, Qt
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -124,7 +128,7 @@ class checkMessagesThreaded(QObject):
 class audioPlayer():
     def playSound(sound):
         try:
-            if (platform.system() == 'Darwin' or platform.system() == 'Linux'):
+            if (machineOs == 'Darwin' or machineOs == 'Linux'):
                 alert = AudioSegment.from_mp3(dir_path + "/res/sounds/" + sound)
                 play(alert)
             else:
