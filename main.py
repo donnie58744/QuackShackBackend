@@ -54,6 +54,7 @@ class checkMessagesThreaded(QObject):
     def __init__(self, signal_to_emit, parent=None):
         super().__init__(parent)
         self.signal_to_emit = signal_to_emit
+        self.idCurrent = 0
         self.idTemp = 0
         self.messageCountTemp = 0
         self.firstTimeLock = False
@@ -70,45 +71,46 @@ class checkMessagesThreaded(QObject):
                 messages = working.sendServerRequest('backend/getMessages.php','getMessages', working.username, working.password, working.maxMessages).split(working.charSplit)
                 
                 # Dont judge
-                # Bassically loop however many times there are messages
+                # Add to queue
                 for i in messages:
                     # check if there is anything in DB
                     if (len(i) != 0):
                         # Gets current post it ID
                         idCounter = i.split('|')[0]
-                        messageContent = i.split('|')[2]
-                        messageFunction = i.split('|')[4]
+                        timeSent = i.split('|')[1]
+                        messageTitle = i.split('|')[2]
+                        displayName = i.split('|')[3]
+                        messageContent = i.split('|')[4]
+                        messageFunction = i.split('|')[5]
                         if (self.messageCountTemp == 0):
-                            idCurrent = idCounter
+                            self.idCurrent = idCounter
 
-                        messagesLeft = int(idCurrent) - int(self.idTemp)
+                        messagesLeft = int(self.idCurrent) - int(self.idTemp)
+
                         # If new message add to message queue
-                        while self.queueCounter < messagesLeft and self.firstTimeLock:
-                            self.messageQueue.insert(0, [idCounter, messageFunction, messageContent])
-                            
+                        while self.queueCounter < messagesLeft and self.firstTimeLock and messagesLeft != 0:
+                            self.messageQueue.insert(0, [idCounter, timeSent, messageTitle, displayName, messageContent, messageFunction])
                             self.queueCounter += 1
                             break
 
                         self.messageCountTemp += 1
 
-                # PLAY SOUND CODE
+                # Play Sound and Create Messages
                 # Loop through queue
                 for x in range(0,len(self.messageQueue)):
                     # Make Postit
-                    self.signal_to_emit.emit(str(self.messageQueue[x]))
+                    self.signal_to_emit.emit("id: " + str(self.messageQueue[x][0]) + "<p style='color:black; font-size: 14px;'>" + str(self.messageQueue[x][1]) + "</p>" + "<h2 style='color:black;'> Title: " + str(self.messageQueue[x][2]) + "</h2>" + "<h3 style='color:#4a4c4f;'> Name: " + str(self.messageQueue[x][3]) + "</h3>" + "<p style='font-size: 14px; color:black;'>" + str(self.messageQueue[x][4]) + "</p>")
 
-                    print(self.messageQueue[x][0])
-                    sound = str(self.messageQueue[x][1])
+                    sound = str(self.messageQueue[x][5])
                     if (sound == 'TTS'):
                         print('TEXT TO SPEECH')
-                        tts = gTTS(self.messageQueue[x][2])
+                        tts = gTTS(self.messageQueue[x][4])
                         tts.save(dir_path+'/res/sounds/TTS.mp3')
                         sound = 'TTS.mp3'
                     # Alert if new message comes in
                     audioThread= Thread(target=audioPlayer.playSound(sound), daemon=True)
                     audioThread.start()
                                 
-
                 # Reset Stuff
                 self.firstTimeLock = True
                 self.messageCountTemp = 0
@@ -117,7 +119,7 @@ class checkMessagesThreaded(QObject):
 
                 # Sets the temp id last so it can check the current id first
                 if (self.messageCountTemp == 0):
-                    self.idTemp = idCurrent
+                    self.idTemp = self.idCurrent
             except Exception as e:
                 print("Create Message Error: " + str(e))
 
