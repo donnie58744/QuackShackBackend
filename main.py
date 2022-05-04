@@ -82,29 +82,32 @@ class checkMessagesThreaded(QObject):
                             idCurrent = idCounter
 
                         messagesLeft = int(idCurrent) - int(self.idTemp)
-                        # If new message is added then execute message stuff
+                        # If new message add to message queue
                         while self.queueCounter < messagesLeft and self.firstTimeLock:
-                            self.messageQueue.insert(0, [messageFunction,messageContent])
+                            self.messageQueue.insert(0, [idCounter, messageFunction, messageContent])
                             
-                            # Make Postit
-                            self.signal_to_emit.emit(str(i))
-                            
-                            # PLAY SOUND CODE
-                            print(self.messageQueue[self.queueCounter])
-                            sound = str(self.messageQueue[self.queueCounter][0])
-                            if (sound == 'TTS'):
-                                print('TEXT TO SPEECH')
-                                tts = gTTS(self.messageQueue[self.queueCounter][1])
-                                tts.save(dir_path+'/res/sounds/TTS.mp3')
-                                sound = 'TTS.mp3'
-                            # Alert if new message comes in
-                            audioThread= Thread(target=audioPlayer.playSound(sound))
-                            audioThread.start()
-
                             self.queueCounter += 1
                             break
-                                
+
                         self.messageCountTemp += 1
+
+                # PLAY SOUND CODE
+                # Loop through queue
+                for x in range(0,len(self.messageQueue)):
+                    # Make Postit
+                    self.signal_to_emit.emit(str(self.messageQueue[x]))
+
+                    print(self.messageQueue[x][0])
+                    sound = str(self.messageQueue[x][1])
+                    if (sound == 'TTS'):
+                        print('TEXT TO SPEECH')
+                        tts = gTTS(self.messageQueue[x][2])
+                        tts.save(dir_path+'/res/sounds/TTS.mp3')
+                        sound = 'TTS.mp3'
+                    # Alert if new message comes in
+                    audioThread= Thread(target=audioPlayer.playSound(sound), daemon=True)
+                    audioThread.start()
+                                
 
                 # Reset Stuff
                 self.firstTimeLock = True
