@@ -5,7 +5,6 @@ import sys
 subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "req.txt"])
 
-
 import platform
 machineOs = platform.system()
 if (machineOs == 'Darwin' or machineOs == 'Linux'):
@@ -41,17 +40,6 @@ class working():
 
     charSplit = '|**|\/|**|'
 
-    messageCountTemp = 0
-    messageCountLock = False
-
-    idTemp = 0
-    idCurrent = 0
-    idCounter = 0
-
-    queueCounter = 0
-    messageQueue = []
-    messageFunction = ''
-
     def sendServerRequest(place, request, username, password, amountOfMessages):
         headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:55.0) Gecko/20100101 Firefox/55.0',
@@ -66,62 +54,66 @@ class checkMessagesThreaded(QObject):
     def __init__(self, signal_to_emit, parent=None):
         super().__init__(parent)
         self.signal_to_emit = signal_to_emit
+        self.idTemp = 0
+        self.messageCountTemp = 0
+        self.firstTimeLock = False
+        self.messageQueue = []
+        self.queueCounter = 0
 
     @pyqtSlot()
     def executeThread( self ):
+        print('Check Message Thread Started At: ', QThread.currentThread())
         while True:
-            print('Slot doing stuff in:', QThread.currentThread())
             sleep(5)
-
             try:
                 # Split messages up into sperate objects
                 messages = working.sendServerRequest('backend/getMessages.php','getMessages', working.username, working.password, working.maxMessages).split(working.charSplit)
                 
-                # Math bullshit
+                # Dont judge
                 # Bassically loop however many times there are messages
                 for i in messages:
                     # check if there is anything in DB
                     if (len(i) != 0):
                         # Gets current post it ID
-                        working.idCounter = i.split('|')[0]
-                        working.messageFunction = i.split('|')[3]
-                        if (working.messageCountTemp == 0):
-                            working.idCurrent = working.idCounter
+                        idCounter = i.split('|')[0]
+                        messageContent = i.split('|')[2]
+                        messageFunction = i.split('|')[4]
+                        if (self.messageCountTemp == 0):
+                            idCurrent = idCounter
 
-                        messagesLeft = int(working.idCurrent) - int(working.idTemp)
-                        print(messagesLeft)
-                        if (messagesLeft != 0):
-                            # If new ID is added then execute message stuff
-                            while working.queueCounter < int(working.idCurrent) - int(working.idTemp) and working.messageCountLock:
-                                working.messageQueue.insert(0, working.messageFunction)
-                                
-                                self.signal_to_emit.emit(str(i))
-                                working.queueCounter += 1
-                                break
-                                
-                        working.messageCountTemp += 1
+                        messagesLeft = int(idCurrent) - int(self.idTemp)
+                        # If new message is added then execute message stuff
+                        while self.queueCounter < messagesLeft and self.firstTimeLock:
+                            self.messageQueue.insert(0, [messageFunction,messageContent])
+                            
+                            # PLAY SOUND CODE
+                            print(self.messageQueue[self.queueCounter])
+                            sound = str(self.messageQueue[self.queueCounter][0])
+                            if (sound == 'TTS'):
+                                print('TEXT TO SPEECH')
+                                tts = gTTS(self.messageQueue[self.queueCounter][1])
+                                tts.save(dir_path+'/res/sounds/TTS.mp3')
+                                sound = 'TTS.mp3'
+                            # Alert if new message comes in
+                            audioThread= Thread(target=audioPlayer.playSound(sound))
+                            audioThread.start()
 
-                # Check if theres any messages
-                if (working.messageCountLock):
-                    # Prevent range error
-                    if (working.idTemp == "" or working.idCurrent == ""):
-                        working.idTemp = 0
-                        working.idCurrent = 0
-                    # This is a queue for the sound effect
-                    for x in range(0, len(working.messageQueue)):
-                        # Alert if new message comes in
-                        audioThread= Thread(target=audioPlayer.playSound(working.messageQueue[x]))
-                        audioThread.start()
-                    working.messageQueue = []
+                            # Make Postit
+                            self.signal_to_emit.emit(str(i))
+                            self.queueCounter += 1
+                            break
+                                
+                        self.messageCountTemp += 1
 
                 # Reset Stuff
-                working.messageCountLock = True
-                working.messageCountTemp = 0
-                working.queueCounter = 0
+                self.firstTimeLock = True
+                self.messageCountTemp = 0
+                self.messageQueue = []
+                self.queueCounter = 0
 
                 # Sets the temp id last so it can check the current id first
-                if (working.messageCountTemp == 0):
-                    working.idTemp = working.idCurrent
+                if (self.messageCountTemp == 0):
+                    self.idTemp = idCurrent
             except Exception as e:
                 print("Create Message Error: " + str(e))
 
@@ -137,16 +129,11 @@ class audioPlayer():
             print('Playsound Error: ' + str(e))
 
 class messagesPage(QWidget):
-    """
-    This "window" is a QWidget. If it has no parent, it
-    will appear as a free-floating window as we want.
-    """
+    # Signal for creating messages from checkMessagesThreaded
     sig = pyqtSignal(str)
     def __init__(self):
         super().__init__()
-        
         uic.loadUi(dir_path+'/res/frames/messagePage.ui', self)
-
         self.showFullScreen()
 
         # Start thread button
@@ -165,6 +152,7 @@ class messagesPage(QWidget):
         self.row = 0
         self.layoutCheck = 0
 
+        # Start checkMessagesThreaded
         self.worker = checkMessagesThreaded(self.sig)
         thread = QThread(self) 
         self.worker.moveToThread(thread)
@@ -201,7 +189,6 @@ class messagesPage(QWidget):
         self.messageArea.setText(text)
         self.gridLayout.addWidget(self.messageArea, self.row, self.colum)
         
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -224,7 +211,6 @@ class MainWindow(QMainWindow):
                 self.openWindow(messagesPage)
             else:
                 print('Alert user failed login')
-
 
 app = QApplication(sys.argv)
 w = MainWindow()
