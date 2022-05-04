@@ -86,6 +86,9 @@ class checkMessagesThreaded(QObject):
                         while self.queueCounter < messagesLeft and self.firstTimeLock:
                             self.messageQueue.insert(0, [messageFunction,messageContent])
                             
+                            # Make Postit
+                            self.signal_to_emit.emit(str(i))
+                            
                             # PLAY SOUND CODE
                             print(self.messageQueue[self.queueCounter])
                             sound = str(self.messageQueue[self.queueCounter][0])
@@ -98,8 +101,6 @@ class checkMessagesThreaded(QObject):
                             audioThread= Thread(target=audioPlayer.playSound(sound))
                             audioThread.start()
 
-                            # Make Postit
-                            self.signal_to_emit.emit(str(i))
                             self.queueCounter += 1
                             break
                                 
