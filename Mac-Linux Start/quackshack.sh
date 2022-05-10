@@ -1,2 +1,2 @@
-cd Documents/Github/QuackShackBackend/
+cd ..
 sudo python3 main.py

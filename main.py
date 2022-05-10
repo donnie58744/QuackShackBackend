@@ -1,27 +1,41 @@
-from concurrent.futures import thread
 import subprocess
 import sys
 #Setup
-subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "req.txt"])
+try:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "req.txt"])
+except Exception as e:
+    print("Setup Failed: " + str(e))
 
+# Check what system your on to make the program cross compatible
 import platform
 machineOs = platform.system()
 if (machineOs == 'Darwin' or machineOs == 'Linux'):
     from pydub import AudioSegment
     from pydub.playback import play
+    if(machineOs == 'Linux'):
+        subprocess.check_call(["sudo", "apt-get", "install", "qt5-default"])
+        # PyQt Libs
+        from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QPushButton
+        from PyQt5 import uic
+        from PyQt5.QtCore import QThread, pyqtSlot, QObject, pyqtSignal
+    else:
+        # PyQt Libs
+        from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QPushButton
+        from PyQt6 import uic
+        from PyQt6.QtCore import QThread, pyqtSlot, QObject, pyqtSignal
 else:
     from audioplayer import AudioPlayer
+    # PyQt Libs
+    from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QPushButton
+    from PyQt6 import uic
+    from PyQt6.QtCore import QThread, pyqtSlot, QObject, pyqtSignal
 
 from threading import Thread
 from gtts import gTTS
 import os
 import requests
 from time import sleep
-# PyQt Libs
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QPushButton
-from PyQt6 import uic
-from PyQt6.QtCore import QThread, pyqtSlot, QObject, pyqtSignal, Qt
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

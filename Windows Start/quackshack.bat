@@ -1,2 +1,2 @@
-cd Downloads/QuackShackBackend/
+cd ..
 python main.py
