@@ -1,5 +1,4 @@
 requests
-PyQt6
 audioplayer
 pydub
 gTTS
