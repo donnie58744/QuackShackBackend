@@ -16,7 +16,6 @@ if (machineOs == 'Darwin' or machineOs == 'Linux'):
     if(machineOs == 'Linux'):
         subprocess.check_call(["sudo", "apt-get", "install", "qt5-default"])
         # PyQt Libs
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "PyQt5"])
         from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTextEdit, QPushButton
         from PyQt5 import uic
         from PyQt5.QtCore import QThread, pyqtSlot, QObject, pyqtSignal
