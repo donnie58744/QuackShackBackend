@@ -55,6 +55,7 @@ class working():
     password = ''
 
     charSplit = '|**|\/|**|'
+    messageSplit = '|::|\/|::|'
 
     def sendServerRequest(place, request, username, password, amountOfMessages):
         headers = {
@@ -83,21 +84,19 @@ class checkMessagesThreaded(QObject):
         while True:
             sleep(5)
             try:
-                # Split messages up into sperate objects
-                messages = working.sendServerRequest('backend/getMessages.php','getMessages', working.username, working.password, working.maxMessages).split(working.charSplit)
+                messages = working.sendServerRequest('backend/getMessages.php','getMessages', working.username, working.password, working.maxMessages).split(working.messageSplit)
                 
                 # Dont judge
-                # Add to queue
                 for i in messages:
-                    # check if there is anything in DB
+                    # Check for new message
                     if (len(i) != 0):
                         # Gets current post it ID
-                        idCounter = i.split('|')[0]
-                        timeSent = i.split('|')[1]
-                        messageTitle = i.split('|')[2]
-                        displayName = i.split('|')[3]
-                        messageContent = i.split('|')[4]
-                        messageFunction = i.split('|')[5]
+                        idCounter = i.split(working.charSplit)[0]
+                        timeSent = i.split(working.charSplit)[1]
+                        messageTitle = i.split(working.charSplit)[2]
+                        displayName = i.split(working.charSplit)[3]
+                        messageContent = i.split(working.charSplit)[4]
+                        messageFunction = i.split(working.charSplit)[5]
                         if (self.messageCountTemp == 0):
                             self.idCurrent = idCounter
 
