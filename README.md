@@ -1,15 +1,15 @@
 #### Install First:
 `Python 3 w PIP`
-> Download Python from [here](https://www.python.org/downloads/)
+- Download `Python` from [here](https://www.python.org/downloads/)
 
 `MacOs Dependencies`
-> `HomeBrew` - Download Homebrew from [here](https://brew.sh)
+- `HomeBrew` - Download Homebrew from [here](https://brew.sh)
 
-> `FFMPEG` - Paste this in your terminal `brew install ffmpeg`
+- `FFMPEG` - Paste this in your terminal `brew install ffmpeg`
  
 `Linux Dependencies`
 
-> `FFMPEG` - On Ubutu paste this in your terminal `sudo apt install ffmpeg` else vist [FFMPEG](https://www.ffmpeg.org/download.html)
+- `FFMPEG` - On Ubutu paste this in your terminal `sudo apt install ffmpeg` else vist [FFMPEG](https://www.ffmpeg.org/download.html)
 
 #### Run:
 `Sh or Bat file`
