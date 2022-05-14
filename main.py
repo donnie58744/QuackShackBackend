@@ -5,7 +5,7 @@ try:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "req.txt"])
 except Exception as e:
-    print("Setup Failed: " + str(e))
+    print("Setup Failed: " + str(e) + " This could be due to not opening the program from a terminal")
 
 # Check what system your on to make the program cross compatible
 import platform
@@ -85,7 +85,7 @@ class checkMessagesThreaded(QObject):
             sleep(5)
             try:
                 messages = working.sendServerRequest('backend/getMessages.php','getMessages', working.username, working.password, working.maxMessages).split(working.messageSplit)
-                
+
                 # Dont judge
                 for i in messages:
                     # Check for new message
