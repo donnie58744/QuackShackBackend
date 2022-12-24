@@ -9,7 +9,7 @@
  
 `Linux Dependencies`
 
-- `FFMPEG` - On Ubutu paste this in your terminal `sudo apt install ffmpeg` else vist [FFMPEG](https://www.ffmpeg.org/download.html)
+> `FFMPEG` - On Ubutu paste this in your terminal `sudo apt install ffmpeg` else vist [FFMPEG](https://www.ffmpeg.org/download.html)
 
 #### Run:
 `Sh or Bat file`
